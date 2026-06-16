@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Circuit du Bouvreau — Pilotes</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(160deg, #0d0a1a 0%, #1a1230 50%, #0d0a1a 100%);
+    color: #fff;
+    min-height: 100dvh;
+    padding-bottom: 40px;
+  }
+
+  .header {
+    padding: 28px 20px 20px;
+    text-align: center;
+    position: relative;
+  }
+  .header::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 20px; right: 20px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+  }
+  .header .eyebrow {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    background: linear-gradient(90deg, #E91E8C, #3DA5F4);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 6px;
+  }
+  .header h1 {
+    font-family: 'Anton', sans-serif;
+    font-size: 2rem;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    line-height: 1.05;
+    background: linear-gradient(90deg, #ffffff, #d8d4ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .header p {
+    color: #9b95c9;
+    font-size: 0.85rem;
+    margin-top: 6px;
+  }
+
+  .search-bar {
+    margin: 18px 20px 14px;
+    position: relative;
+  }
+  .search-bar input {
+    width: 100%;
+    padding: 14px 16px 14px 44px;
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.06);
+    color: #fff;
+    font-size: 0.95rem;
+    font-family: inherit;
+  }
+  .search-bar input::placeholder { color: #6b6590; }
+  .search-bar input:focus { outline: none; border-color: #E91E8C; }
+  .search-icon {
+    position: absolute;
+    left: 16px; top: 50%;
+    transform: translateY(-50%);
+    font-size: 1rem;
+    opacity: 0.6;
+  }
+
+  .filters {
+    padding: 0 20px;
+    margin-bottom: 18px;
+  }
+  .filter-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #6b6590;
+    margin: 14px 0 8px;
+  }
+  .filter-row {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scrollbar-width: none;
+  }
+  .filter-row::-webkit-scrollbar { display: none; }
+  .chip {
+    flex-shrink: 0;
+    padding: 9px 16px;
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.05);
+    color: #d8d4ff;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .chip.active {
+    background: linear-gradient(90deg, #E91E8C, #3DA5F4);
+    border-color: transparent;
+    color: #fff;
+  }
+  .chip[data-cat] {
+    border-color: var(--cat-color, rgba(255,255,255,0.15));
+  }
+  .chip[data-cat].active {
+    background: var(--cat-color);
+    color: #fff;
+  }
+
+  .count-bar {
+    padding: 4px 20px 12px;
+    font-size: 0.78rem;
+    color: #6b6590;
+    font-weight: 600;
+  }
+  .count-bar strong { color: #fff; }
+
+  .pilote-list {
+    padding: 0 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .pilote-card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    transition: transform 0.12s, background 0.12s;
+  }
+  .pilote-card:active { transform: scale(0.98); background: rgba(255,255,255,0.08); }
+
+  .dossard {
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Anton', sans-serif;
+    font-size: 1.1rem;
+    color: #fff;
+    background: var(--cat-color);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  }
+
+  .pilote-info { flex: 1; min-width: 0; }
+  .pilote-name {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 2px;
+  }
+  .pilote-cat {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--cat-color);
+  }
+
+  .pilote-stand {
+    flex-shrink: 0;
+    text-align: right;
+  }
+  .stand-label {
+    font-size: 0.62rem;
+    color: #6b6590;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 2px;
+  }
+  .stand-value {
+    font-family: 'Anton', sans-serif;
+    font-size: 1.05rem;
+    background: linear-gradient(90deg, #E91E8C, #3DA5F4);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .presence-dots {
+    display: flex;
+    gap: 3px;
+    margin-top: 4px;
+    justify-content: flex-end;
+  }
+  .pdot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+  }
+  .pdot.on { background: #3DA5F4; }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #6b6590;
+  }
+  .empty-state .icon { font-size: 2.5rem; margin-bottom: 10px; opacity: 0.5; }
+
+  .demo-banner {
+    margin: 0 20px 18px;
+    padding: 10px 14px;
+    background: rgba(233,30,140,0.12);
+    border: 1px solid rgba(233,30,140,0.3);
+    border-radius: 12px;
+    font-size: 0.75rem;
+    color: #ff9ec9;
+    text-align: center;
+    font-weight: 600;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="eyebrow">Circuit du Bouvreau · Autocross</div>
+  <h1>Liste des pilotes</h1>
+  <p>Championnat d'Europe — 6e manche · 18-19 juillet 2026</p>
+</div>
+
+<div class="demo-banner">⚠️ DONNÉES D'EXEMPLE — à remplacer par la liste réelle des pilotes engagés</div>
+
+<div class="search-bar">
+  <span class="search-icon">🔍</span>
+  <input type="text" id="searchInput" placeholder="Chercher un pilote, un dossard, un stand...">
+</div>
+
+<div class="filters">
+  <div class="filter-label">Jour</div>
+  <div class="filter-row" id="dayFilters">
+    <div class="chip active" data-day="all">Tout</div>
+    <div class="chip" data-day="v">Vendredi</div>
+    <div class="chip" data-day="s">Samedi</div>
+    <div class="chip" data-day="d">Dimanche</div>
+  </div>
+
+  <div class="filter-label">Catégorie</div>
+  <div class="filter-row" id="catFilters">
+    <div class="chip active" data-cat="all">Toutes</div>
+    <div class="chip" data-cat="AX Junior Buggy" style="--cat-color:#E91E8C">AX Junior Buggy</div>
+    <div class="chip" data-cat="XC Junior Cross Car" style="--cat-color:#3DA5F4">XC Junior Cross Car</div>
+    <div class="chip" data-cat="AX National" style="--cat-color:#9B4DE0">AX National</div>
+    <div class="chip" data-cat="Super Buggy" style="--cat-color:#FF7A1A">Super Buggy</div>
+    <div class="chip" data-cat="Division 3" style="--cat-color:#2ECC71">Division 3</div>
+    <div class="chip" data-cat="Division 2" style="--cat-color:#F4C430">Division 2</div>
+    <div class="chip" data-cat="Division 1" style="--cat-color:#E63946">Division 1</div>
+  </div>
+
+  <div class="filter-label">Paddock</div>
+  <div class="filter-row" id="alleeFilters">
+    <div class="chip active" data-allee="all">Toutes</div>
+    <div class="chip" data-allee="A">Allée A</div>
+    <div class="chip" data-allee="B">Allée B</div>
+    <div class="chip" data-allee="C">Allée C</div>
+    <div class="chip" data-allee="D">Allée D</div>
+    <div class="chip" data-allee="E">Allée E</div>
+    <div class="chip" data-allee="F">Allée F</div>
+    <div class="chip" data-allee="G">Allée G</div>
+    <div class="chip" data-allee="H">Allée H</div>
+  </div>
+</div>
+
+<div class="count-bar" id="countBar"></div>
+
+<div class="pilote-list" id="piloteList"></div>
+
+<script id="d-pilotes" type="application/json">[{"name": "Antoine Nicolas", "cat": "XC Junior Cross Car", "dossard": 138, "stand": "A21", "v": true, "s": true, "d": true, "highlight": ""}, {"name": "Antoine Pasquier", "cat": "Division 3", "dossard": 132, "stand": "E24", "v": false, "s": true, "d": true, "highlight": ""}, {"name": "Axel Chevalier", "cat": "Super Buggy", "dossard": 70, "stand": "B13", "v": false, "s": true, "d": true, "highlight": ""}, {"name": "Axel Pageaud", "cat": "AX Junior Buggy", "dossard": 12, "stand": "A20", "v": false, "s": true, "d": true, "highlight": ""}, {"name": "Baptiste Brunet", "cat": "Division 2", "dossard": 168, "stand": "E16", "v": true, "s": true, "d": true, "highlight": ""}, {"name": "Baptiste Gauthier", "cat": "AX Junior Buggy", "dossard": 125, "stand": "H11", "v": false, "s": true, "d": true, "highlight": ""}, {"name": "Baptiste Robin", "cat": "Division 1", "dossard": 62, "stand": "F22", "v": false, "s": true, "d": true, "highlight": ""}, {"name": "Camille Brunet", "cat": "AX Junior Buggy", "dossard": 151, "stand": "F12", "v": false, "s": true, "d": true, "highlight": ""}, {"name": "Camille Chevalier", "cat": "Division 1", "dossard": 122, "stand": "F3", "v": false, "s": true, "d": true, "highlight": ""}, {"name": "Camille Métais", "cat": "AX Junior Buggy", "dossard": 198, "stand": "A5", "v": true, "s": true, "d": true, "highlight": ""}, {"name": "Chloé Boutin", "cat": "Division 2", "dossard": 16, "stand": "C20", "v": true, "s": true, "d": true, "highlight": ""}, {"name": "Chloé Girard", "cat": "Division 1", "dossard": 23, "stand": "B7", "v": true, "s": true, "d": true, "highlight": ""}, {"name": "Enzo Gaborit", "cat": "AX Junior Buggy", "dossard": 169, "stand": "D23", "v": true, "s": true, "d": true, "highlight": ""}, {"name": "Enzo Gauthier", "cat": "Super Buggy", "dossard": 189, "stand": "F24", "v": true, "s": true, "d": false, "highlight": ""}, {"name": "Enzo Rousseau", "cat": "Division 2", "dossard": 2, "stand": "G5", "v": false, "s": true, "d": true, "highlight": ""}, {"name": "Enzo Texier", "cat": "XC Junior Cross Car", "dossard": 150, "stand": "H11", "v": false, "s": true, "d": true, "highlight": ""}, {"name": "Florian Mercier", "cat": "Division 3", "dossard": 59, "stand": "C13", "v": true, "s": true, "d": true, "highlight": ""}, {"name": "Florian Roy", "cat": "AX National", "dossard": 156, "stand": "H11", "v": true, "s": true, "d": true, "highlight": ""}, {"name": "Hugo Brunet", "cat": "Division 2", "dossard": 46, "stand": "B1", "v": true, "s": true, "d": true, "highlight": ""}, {"name": "Hugo Gaborit", "cat": "AX National", "dossard": 44, "stand": "A23", "v": true, "s": true, "d": false, "highlight": ""}, {"name": "Hugo Métais", "cat": "AX Junior Buggy", "dossard": 9, "stand": "A16", "v": false, "s": true, "d": true, "highlight": ""}, {"name": "Justine Hervouet", "cat": "Super Buggy", "dossard": 138, "stand": "C4", "v": false, "s": true, "d": true, "highlight": ""}, {"name": "Justine Lemoine", "cat": "Division 2", "dossard": 168, "stand": "A20", "v": false, "s": true, "d": false, "highlight": ""}, {"name": "Kévin Brunet", "cat": "AX Junior Buggy", "dossard": 34, "stand": "A6", "v": true, "s": true, "d": true, "highlight": ""}, {"name": "Kévin Girard", "cat": "Division 3", "dossard": 48, "stand": "H15", "v": false, "s": true, "d": true, "highlight": ""}, {"name": "Kévin Pasquier", "cat": "Division 1", "dossard": 154, "stand": "B17", "v": false, "s": true, "d": true, "highlight": ""}, {"name": "Loïc Gauthier", "cat": "AX National", "dossard": 106, "stand": "D7", "v": false, "s": true, "d": true, "highlight": ""}, {"name": "Loïc Moreau", "cat": "Division 1", "dossard": 150, "stand": "E13", "v": true, "s": true, "d": true, "highlight": ""}, {"name": "Lucas Fontaine", "cat": "XC Junior Cross Car", "dossard": 51, "stand": "A15", "v": false, "s": true, "d": true, "highlight": ""}, {"name": "Lucas Roy", "cat": "Division 2", "dossard": 145, "stand": "E19", "v": false, "s": true, "d": true, "highlight": ""}, {"name": "Lucie Fontaine", "cat": "XC Junior Cross Car", "dossard": 35, "stand": "G8", "v": false, "s": true, "d": true, "highlight": ""}, {"name": "Lucie Gaborit", "cat": "AX National", "dossard": 52, "stand": "A12", "v": false, "s": true, "d": true, "highlight": ""}, {"name": "Lucie Marchand", "cat": "XC Junior Cross Car", "dossard": 86, "stand": "B14", "v": false, "s": true, "d": true, "highlight": ""}, {"name": "Léa Dubois", "cat": "Division 1", "dossard": 20, "stand": "F12", "v": true, "s": true, "d": true, "highlight": ""}, {"name": "Léo Bonnet", "cat": "Division 2", "dossard": 194, "stand": "E7", "v": false, "s": true, "d": true, "highlight": ""}, {"name": "Manon Bonnet", "cat": "Super Buggy", "dossard": 132, "stand": "B14", "v": true, "s": true, "d": true, "highlight": ""}, {"name": "Manon Pageaud", "cat": "XC Junior Cross Car", "dossard": 34, "stand": "H17", "v": true, "s": true, "d": true, "highlight": ""}, {"name": "Manon Pelletier", "cat": "XC Junior Cross Car", "dossard": 133, "stand": "H5", "v": false, "s": true, "d": false, "highlight": ""}, {"name": "Marine Boutin", "cat": "XC Junior Cross Car", "dossard": 51, "stand": "D6", "v": false, "s": true, "d": false, "highlight": ""}, {"name": "Marine Fournier", "cat": "Division 3", "dossard": 157, "stand": "E10", "v": false, "s": true, "d": false, "highlight": ""}, {"name": "Marine Roy", "cat": "Division 2", "dossard": 195, "stand": "H16", "v": false, "s": true, "d": true, "highlight": ""}, {"name": "Mathis Brunet", "cat": "Division 2", "dossard": 126, "stand": "G9", "v": false, "s": true, "d": false, "highlight": ""}, {"name": "Mathis Moreau", "cat": "AX Junior Buggy", "dossard": 31, "stand": "E11", "v": true, "s": true, "d": true, "highlight": ""}, {"name": "Mathis Nicolas", "cat": "AX National", "dossard": 58, "stand": "C13", "v": false, "s": true, "d": true, "highlight": ""}, {"name": "Mathis Robin", "cat": "Division 2", "dossard": 58, "stand": "A16", "v": false, "s": true, "d": true, "highlight": ""}, {"name": "Mathis Rousseau", "cat": "Division 3", "dossard": 132, "stand": "B23", "v": true, "s": true, "d": true, "highlight": ""}, {"name": "Maxime Boutin", "cat": "Division 2", "dossard": 35, "stand": "B16", "v": true, "s": true, "d": true, "highlight": ""}, {"name": "Maxime Chevalier", "cat": "XC Junior Cross Car", "dossard": 69, "stand": "G15", "v": true, "s": true, "d": true, "highlight": ""}, {"name": "Maxime Girard", "cat": "Division 2", "dossard": 121, "stand": "A7", "v": true, "s": true, "d": false, "highlight": ""}, {"name": "Pauline Girard", "cat": "Super Buggy", "dossard": 98, "stand": "A16", "v": false, "s": true, "d": true, "highlight": ""}, {"name": "Pauline Pelletier", "cat": "Division 3", "dossard": 155, "stand": "E1", "v": true, "s": true, "d": true, "highlight": ""}, {"name": "Quentin Hervouet", "cat": "XC Junior Cross Car", "dossard": 158, "stand": "B5", "v": true, "s": true, "d": true, "highlight": ""}, {"name": "Quentin Marchand", "cat": "AX Junior Buggy", "dossard": 18, "stand": "B13", "v": true, "s": true, "d": true, "highlight": ""}, {"name": "Quentin Pageaud", "cat": "Division 1", "dossard": 90, "stand": "F9", "v": false, "s": true, "d": false, "highlight": ""}, {"name": "Romain Guérin", "cat": "Division 1", "dossard": 52, "stand": "C18", "v": false, "s": true, "d": true, "highlight": ""}, {"name": "Sarah Rousseau", "cat": "Division 2", "dossard": 118, "stand": "F13", "v": false, "s": true, "d": true, "highlight": ""}, {"name": "Théo Pasquier", "cat": "Super Buggy", "dossard": 134, "stand": "E7", "v": false, "s": true, "d": true, "highlight": ""}, {"name": "Tom Brisson", "cat": "Super Buggy", "dossard": 173, "stand": "G3", "v": false, "s": true, "d": true, "highlight": ""}, {"name": "Tom Métais", "cat": "AX Junior Buggy", "dossard": 66, "stand": "B3", "v": true, "s": true, "d": true, "highlight": ""}, {"name": "Tom Pageaud", "cat": "Division 3", "dossard": 26, "stand": "F15", "v": false, "s": true, "d": false, "highlight": ""}]
+</script>
+<script id="d-catcolors" type="application/json">{"AX Junior Buggy": "#E91E8C", "XC Junior Cross Car": "#3DA5F4", "AX National": "#9B4DE0", "Super Buggy": "#FF7A1A", "Division 3": "#2ECC71", "Division 2": "#F4C430", "Division 1": "#E63946"}</script>
+
+<script>
+  const PILOTES = JSON.parse(document.getElementById('d-pilotes').textContent);
+  const CAT_COLORS = JSON.parse(document.getElementById('d-catcolors').textContent);
+
+  let activeDay = 'all';
+  let activeCat = 'all';
+  let activeAllee = 'all';
+  let searchTerm = '';
+
+  function normalize(str) {
+    return str.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  }
+
+  function render() {
+    const list = document.getElementById('piloteList');
+    const countBar = document.getElementById('countBar');
+
+    let filtered = PILOTES.filter(p => {
+      if (activeDay !== 'all' && !p[activeDay]) return false;
+      if (activeCat !== 'all' && p.cat !== activeCat) return false;
+      if (activeAllee !== 'all' && !p.stand.startsWith(activeAllee)) return false;
+      if (searchTerm) {
+        const haystack = normalize(p.name + ' ' + p.dossard + ' ' + p.stand + ' ' + p.cat);
+        if (!haystack.includes(normalize(searchTerm))) return false;
+      }
+      return true;
+    });
+
+    countBar.innerHTML = `<strong>${filtered.length}</strong> pilote${filtered.length !== 1 ? 's' : ''} trouvé${filtered.length !== 1 ? 's' : ''}`;
+
+    if (filtered.length === 0) {
+      list.innerHTML = `<div class="empty-state"><div class="icon">🏁</div>Aucun pilote ne correspond à votre recherche</div>`;
+      return;
+    }
+
+    list.innerHTML = filtered.map(p => {
+      const color = CAT_COLORS[p.cat] || '#888';
+      const initials = p.dossard;
+      return `
+        <div class="pilote-card" style="--cat-color:${color}">
+          <div class="dossard">${initials}</div>
+          <div class="pilote-info">
+            <div class="pilote-name">${p.name}</div>
+            <div class="pilote-cat">${p.cat}</div>
+          </div>
+          <div class="pilote-stand">
+            <div class="stand-label">Paddock</div>
+            <div class="stand-value">${p.stand}</div>
+            <div class="presence-dots">
+              <div class="pdot ${p.v ? 'on' : ''}" title="Vendredi"></div>
+              <div class="pdot ${p.s ? 'on' : ''}" title="Samedi"></div>
+              <div class="pdot ${p.d ? 'on' : ''}" title="Dimanche"></div>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  document.getElementById('searchInput').addEventListener('input', (e) => {
+    searchTerm = e.target.value;
+    render();
+  });
+
+  function setupChipGroup(containerId, attr, onSelect) {
+    const container = document.getElementById(containerId);
+    container.querySelectorAll('.chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        container.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        onSelect(chip.getAttribute(attr));
+      });
+    });
+  }
+
+  setupChipGroup('dayFilters', 'data-day', (v) => { activeDay = v; render(); });
+  setupChipGroup('catFilters', 'data-cat', (v) => { activeCat = v; render(); });
+  setupChipGroup('alleeFilters', 'data-allee', (v) => { activeAllee = v; render(); });
+
+  render();
+</script>
+
+</body>
+</html>
